@@ -8,16 +8,6 @@ public class CameraMouseMovement : MonoBehaviour
     public Transform playerBody;
     private float xRotation = 0f;
 
-    private void OnEnable()
-    {
-        Cursor.lockState = CursorLockMode.Locked;
-    }
-
-    private void OnDisable()
-    {
-        Cursor.lockState = CursorLockMode.None;
-    }
-
     // Update is called once per frame
     void Update()
     {
