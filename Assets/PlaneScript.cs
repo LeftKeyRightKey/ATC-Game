@@ -5,8 +5,9 @@ using UnityEngine;
 public class PlaneScript : MonoBehaviour
 {
     RectTransform planeTransform;
+    public float planeSpeed;
 
-    enum planeAIState
+    public enum PlaneState
     {
         wander,
         idleTakeOff,
@@ -18,6 +19,8 @@ public class PlaneScript : MonoBehaviour
         approachFinalEpoch
     };
 
+    public PlaneState planeState = new PlaneState();
+
     void Start()
     {
         //To move object in UI, use RectTransform instead of Transform.
@@ -28,7 +31,7 @@ public class PlaneScript : MonoBehaviour
     {
         AIBehaviour();
         //Use LocalPosition to move things!!! 
-        planeTransform.localPosition += new Vector3(20f, 0f, 0f) * Time.deltaTime;
+        planeTransform.localPosition += new Vector3(planeSpeed, 0f, 0f) * Time.deltaTime;
     }
 
     void AIBehaviour()
