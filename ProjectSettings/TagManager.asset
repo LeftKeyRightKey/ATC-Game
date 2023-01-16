@@ -5,11 +5,12 @@ TagManager:
   serializedVersion: 2
   tags:
   - Monitor
+  - Base
   layers:
   - Default
   - TransparentFX
   - Ignore Raycast
-  - 
+  - Plane
   - Water
   - UI
   - 

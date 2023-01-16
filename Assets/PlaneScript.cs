@@ -5,7 +5,14 @@ using UnityEngine;
 public class PlaneScript : MonoBehaviour
 {
     RectTransform planeTransform;
+    public RectTransform hitPoint;
+    public RectTransform baseTransform;
+    public RectTransform rayCastOrigin;
     public float planeSpeed;
+    public float maxRotation;
+    public LayerMask ignoredLayer;
+    private Rigidbody rb;
+    private RaycastHit hit;
 
     public enum PlaneState
     {
@@ -28,32 +35,69 @@ public class PlaneScript : MonoBehaviour
 
     void Start()
     {
-        //To move object in UI, use RectTransform instead of Transform.
         planeTransform = gameObject.GetComponent<RectTransform>();
-        /*Pindex = 0;
-        movepoint = points[Pindex];*/
+        rb = gameObject.GetComponent<Rigidbody>();
     }
 
     void Update()
     {
         AIBehaviour();
         //Use LocalPosition to move things!!! 
-        planeTransform.localPosition += new Vector3(planeSpeed, 0f, 0f) * Time.deltaTime;
+        if(rb.velocity.sqrMagnitude < planeSpeed)
+        {
+            rb.velocity = -planeTransform.up * planeSpeed * 0.001f;
+        }
     }
 
     void AIBehaviour()
     {
-        /*transform.position = Vector3.MoveTowards(transform.position, movepoint.position, speed * Time.deltaTime);
-        if(Vector3.Distance(transform.position, movepoint.position) <= 0){
-            if(Pindex > MaxIndex){
-                Pindex = 0;
-            }
+        Vector2 target = baseTransform.position;
+
+        float planeRangeWithBase = Vector2.Distance(planeTransform.position, target);
+        Vector3 forward = transform.TransformDirection(-Vector3.up) * 10;
+        Physics.Raycast(rayCastOrigin.position, forward, out hit, Mathf.Infinity, ~ignoredLayer);       
+
+        Debug.DrawRay(rayCastOrigin.position, forward, Color.green);
+            
+        if (planeState == PlaneState.wander)
+        {
+            Debug.Log(hit.collider);
+            if (hit.collider)
+            {   
+                if (hit.collider.tag == "Base")
+                {
+                    rb.angularVelocity = Vector3.zero;
+                }
+            }else if(hit.collider == null)
+                rotateTowardBase(maxRotation, target, false);
+
         }
-        Pindex++;
-        movepoint = points[Pindex];
-        Vector3 pos = movepoint.position - transform.position;
-        float angle = Mathf.Atan2(y, x) * Mathf.Rad2Deg;
-        transform.rotation = Quaternion.Euler(0, 0, angle - 90);*/
+    }
+
+    void rotateTowardBase(float maxRotation, Vector2 target, bool away)
+    {
+        Vector2 direction = target - (Vector2)planeTransform.position;
+        direction.Normalize();
+
+        float rotationAmmount = 0f;
+
+        if (away)
+            rotationAmmount = Vector3.Cross(direction, transform.up).z;
+        else
+            rotationAmmount = Vector3.Cross(direction, -transform.up).z;
+        rb.angularVelocity = Vector3.zero;
+        rb.AddTorque(-transform.forward * rotationAmmount * maxRotation);
+        rb.maxAngularVelocity = maxRotation;
+
+        //Debug.Log(rotationAmmount * 180f);
+    }
+
+    private void OnTriggerEnter(Collider other)
+    {
+        if(other.tag == "Plane")
+        {
+
+        }
     }
 
 }
