@@ -1,6 +1,8 @@
 using System.Collections;
 using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
+using UnityEngine.SocialPlatforms;
 
 public class PlaneScript : MonoBehaviour
 {
@@ -22,6 +24,48 @@ public class PlaneScript : MonoBehaviour
     private float planeRangeWithTarget;
     private float epochRange;
     private int childIndex;
+    private bool landed;
+    private scoreScript scoreScript;
+
+    public class RNG
+    {
+        public float getNumberWithRange(float from, float to)
+        {
+            return Random.Range(from, to);
+        }
+
+        public bool percentageState(float extraCondition, string state)
+        {
+            if (state == "LandedWrongDirection")
+            {
+                if (Random.value > 0.15f + extraCondition)
+                {
+                    return true;
+                }
+                else return false;
+            }
+            if (state == "LandedCorrectly")
+            {
+                if (Random.value > 0.002f + extraCondition)
+                {
+                    return true;
+                }
+                else return false;
+            }
+            return false;
+        }
+
+        public bool percentage(float percentage)
+        {
+            if (Random.value > percentage)
+            {
+                return true;
+            }
+            else return false;
+        }
+    }
+    public RNG rng = new RNG();
+
 
     public enum PlaneState
     {
@@ -34,9 +78,6 @@ public class PlaneScript : MonoBehaviour
         approachEpoch5,
         approachFinalEpoch
     };
-    public float speed;
-    public int MaxIndex;
-    int Pindex;
     Transform movepoint;
     //public Transform[] points; 
 
@@ -44,12 +85,14 @@ public class PlaneScript : MonoBehaviour
 
     void Start()
     {
+        landed = false;
         planeTransform = gameObject.GetComponent<RectTransform>();
         baseTransform = GameObject.FindGameObjectWithTag("Base").gameObject.GetComponent<RectTransform>();
         rb = gameObject.GetComponent<Rigidbody>();
         epochRange = 10f;
         setState(0);
         childIndex = 0;
+        scoreScript = GameObject.FindGameObjectWithTag("Score").gameObject.GetComponent<scoreScript>();
     }
 
     void Update()
@@ -101,15 +144,43 @@ public class PlaneScript : MonoBehaviour
 
         if(planeState == PlaneState.approachFinalEpoch)
         {
-            target = newTarget.position;
-            Debug.Log("Running...");
-            planeRangeWithTarget = Vector3.Distance(planeTransform.position, target) * 100f;
-            Debug.Log(planeRangeWithTarget);
-            rotateTowardSomething(maxRotation, target, false);
+
             if (reachedTarget(planeRangeWithTarget))
             {
-                gameObject.SetActive(false);
+                if (newTarget == newTarget.transform.parent.GetChild(0))
+                {
+                    target = newTarget.transform.parent.GetChild(1).transform.position;
+                    planeSpeed -= 1f * Time.deltaTime;
+                }
+                else if (newTarget == newTarget.transform.parent.GetChild(1))
+                {
+                    target = newTarget.transform.parent.GetChild(0).transform.position;
+                    planeSpeed -= 1f * Time.deltaTime;
+                }
+
+                if(planeSpeed <= 18f)
+                {
+                    if (!landed)
+                    {
+                        gameObject.tag = "LandedPlane";
+                    }
+                }
+
+                if(planeSpeed <= 2f)
+                {
+                    scoreScript.plusScore(200f);
+                    GameObject.Destroy(gameObject);
+                }
             }
+            else
+            {
+                target = newTarget.position;
+                Debug.Log(newTarget.transform.parent.GetChild(0));
+
+                planeRangeWithTarget = Vector3.Distance(planeTransform.position, target) * 100f;
+                Debug.Log(planeRangeWithTarget);
+            }
+            rotateTowardSomething(maxRotation, target, false);
         }
     }
 
@@ -133,10 +204,13 @@ public class PlaneScript : MonoBehaviour
 
     private void OnTriggerEnter(Collider other)
     {
-        if(other.tag == "Plane")
+        if(other.tag == "Plane" && gameObject.tag == "Plane")
         {
-
-            GameObject.Destroy(this);
+            GameObject.Destroy(gameObject);
+        }
+        if(other.tag == "LandedPlane" && gameObject.tag == "LandedPlane")
+        {
+            GameObject.Destroy(gameObject);
         }
     }
 
@@ -159,5 +233,6 @@ public class PlaneScript : MonoBehaviour
         stateIndex = i;
         planeState = (PlaneState)i;
     }
+
 
 }
