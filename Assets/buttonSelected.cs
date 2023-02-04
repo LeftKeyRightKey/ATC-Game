@@ -13,6 +13,7 @@ public class buttonSelected : MonoBehaviour
     public GameObject[] target;
     public GameObject sphere;
 
+    public scoreScript score;
     private PlaneScript planeScript;
 
     // Start is called before the first frame update
@@ -24,6 +25,7 @@ public class buttonSelected : MonoBehaviour
             Debug.Log("Running");
             origin = GameObject.FindGameObjectsWithTag("Plane");
         }
+        score.amountOfPlane = origin.Length;
         foreach(GameObject originTemp in origin)
         {
             origin[i] = originTemp.transform.GetChild(1).gameObject;
@@ -57,7 +59,7 @@ public class buttonSelected : MonoBehaviour
                     {
                         if(EventSystem.current.currentSelectedGameObject != target[k] && k == target.Length - 1) 
                         {
-                            Debug.Log("Failed!");
+                            Debug.Log("Failed! " + EventSystem.current.currentSelectedGameObject + " vs " + target[k]);
                             isWaiting = false;
                             break;
                         }
@@ -85,5 +87,10 @@ public class buttonSelected : MonoBehaviour
         planeScript.setState(2);
         planeScript.getTarget(target.transform);
         Debug.Log(target.transform.name);
+    }
+
+    public void ExitGame()
+    {
+        Application.Quit();
     }
 }

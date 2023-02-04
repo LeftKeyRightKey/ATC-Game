@@ -206,10 +206,12 @@ public class PlaneScript : MonoBehaviour
     {
         if(other.tag == "Plane" && gameObject.tag == "Plane")
         {
+            scoreScript.reducePlane();
             GameObject.Destroy(gameObject);
         }
         if(other.tag == "LandedPlane" && gameObject.tag == "LandedPlane")
         {
+            scoreScript.reducePlane();
             GameObject.Destroy(gameObject);
         }
     }
